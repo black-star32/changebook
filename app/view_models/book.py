@@ -1,4 +1,4 @@
-class BookViewMode:
+class BookViewModel:
     @classmethod
     def package_single(cls, data, keyword):
         returned = {
@@ -8,7 +8,7 @@ class BookViewMode:
         }
         if data:
             returned['total'] = 1
-            returned['books'] = [cls.__cut_book_detail(data)]
+            returned['books'] = [cls.__cut_book_detail(data['data'])]
         return returned
 
     @classmethod
@@ -19,7 +19,7 @@ class BookViewMode:
             'keyword': keyword
         }
         if data:
-            returned['total'] = len(data['books'])
+            returned['total'] = data['total']
             returned['books'] = [cls.__cut_book_detail(book) for book in data['books']]
         return returned
 
@@ -31,7 +31,7 @@ class BookViewMode:
             # 'author': '、'.join(data['author']),
             # 'binding': data['binding'],
             'publisher': data['publisher'],
-            'image': data['images']['large'],
+            'image': data['image'],
             'price': data['price'],
             # 'isbn': data['isbn'],
             # 'pubdate': data['pubdate'],
