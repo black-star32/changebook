@@ -1,4 +1,27 @@
 class BookViewModel:
+    def __init__(self, book):
+        self.title = book['title']
+        self.author = book['author']
+        self.publisher = book['publisher']
+        self.image = book['image']
+        self.price = book['price']
+        self.summary = book['summary']
+        self.pages = book['pages']
+
+class BookCollection:
+    def __init__(self):
+        self.total = 0
+        self.books = []
+        self.keyword = ''
+
+    def fill(self, book, keyword):
+        self.total = book.total
+        self.keyword = keyword
+        self.books = [BookViewModel(bk['data']) for bk in book.books]
+
+
+
+class _BookViewModel:
     @classmethod
     def package_single(cls, data, keyword):
         returned = {
@@ -35,7 +58,7 @@ class BookViewModel:
             'price': data['price'],
             # 'isbn': data['isbn'],
             # 'pubdate': data['pubdate'],
-            'summary': data['summary'],
-            'pages': data['pages']
+            'summary': data['summary'] or '',
+            'pages': data['pages'] or ''
         }
         return book
