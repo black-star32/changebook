@@ -3,6 +3,7 @@ from flask import current_app
 
 
 class ChangeBook:
+    # 模型层 MVC层 M层
     isbn_url = "http://api.xiaomafeixiang.com/api/bookinfo?isbn={}"
     key_word_url = "http://api.xiaomafeixiang.com/api/bookinfo?q={}&count={}&start={}"
 
