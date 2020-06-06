@@ -9,7 +9,8 @@ def create_app():
     rigister_blueprint(app)
 
     db.init_app(app)
-    db.create_all(app=app)
+    with app.app_context():
+        db.create_all()
     return app
 
 def rigister_blueprint(app):
