@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, flash, render_template
 
 from app.forms.book import SearchForm
 from app.spider.change_book import ChangeBook
@@ -36,9 +36,14 @@ def search():
 
         # __dict__
         books.fill(change_book, q)
-        return json.dumps(books, default=lambda o:o.__dict__, ensure_ascii=False)
+        # return json.dumps(books, default=lambda o:o.__dict__, ensure_ascii=False)
         # return jsonify(books.__dict__)
-    return jsonify(form.errors)
+    else:
+        flash('搜索的关键词不符合要求，请重新输入')
+        # return jsonify(form.errors)
+    return render_template('search_result.html', books=books)
 
-
+@web.route('/book/<isbn>/detail')
+def book_detail(isbn):
+    pass
 
