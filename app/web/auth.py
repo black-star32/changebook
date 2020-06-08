@@ -1,13 +1,14 @@
 from flask import render_template, redirect, current_app, g
 from flask import request, flash, url_for
-# from flask_login import login_user, login_required, logout_user, current_user
+from flask_login import login_user
 from flask_sqlalchemy import get_debug_queries
 
+from app.forms.auth import RegisterForm, LoginForm
+from app.models.user import User
 from . import web
 # from app.forms.auth import RegisterForm, LoginForm, ResetPasswordForm, EmailForm, \
 #     ChangePasswordForm
-# from app.models.user import User
-# from app.models import db
+from app.models.base import db
 # from app.libs.email import send_email
 
 __author__ = '七月'
@@ -15,7 +16,14 @@ __author__ = '七月'
 
 @web.route('/register', methods=['GET', 'POST'])
 def register():
-    pass
+    form = RegisterForm(request.form)
+    if request.method == 'POST' and form.validate():
+        user = User()
+        user.set_attr(form.data)
+        db.session.add(user)
+        db.session.commit()
+        return redirect(url_for('web.login'))
+    return render_template('auth/register.html', form=form)
     # form = RegisterForm(request.form)
     # if request.method == 'POST' and form.validate():
     #     user = User()
@@ -35,19 +43,18 @@ def register():
 
 @web.route('/login', methods=['GET', 'POST'])
 def login():
-    pass
-    # form = LoginForm(request.form)
-    # if request.method == 'POST' and form.validate():
-    #     user = User.query.filter_by(email=form.email.data).first()
-    #     if user and user.check_password(form.password.data):
-    #         login_user(user, remember=True)
-    #         next = request.args.get('next')
-    #         if not next or not next.startswith('/'):
-    #             next = url_for('web.index')
-    #         return redirect(next)
-    #     else:
-    #         flash('账号不存在或密码错误', category='login_error')
-    # return render_template('auth/login.html', form=form)
+    form = LoginForm(request.form)
+    if request.method == 'POST' and form.validate():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=True)
+            # next = request.args.get('next')
+            # if not next or not next.startswith('/'):
+            #     next = url_for('web.index')
+            # return redirect(next)
+        else:
+            flash('账号不存在或密码错误', category='login_error')
+    return render_template('auth/login.html', form=form)
 
 
 @web.route('/reset/password', methods=['GET', 'POST'])
