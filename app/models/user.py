@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.base import Base
 
 from sqlalchemy import Column, Integer, String, Boolean, Float
+from app import login_manager
 
 
 class User(UserMixin, Base):
@@ -35,5 +36,9 @@ class User(UserMixin, Base):
         if not self._password:
             return False
         return check_password_hash(self._password, raw)
+
+@login_manager.user_loader
+def get_user(uid):
+    return User.query.get(int(uid))
 
 
