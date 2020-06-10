@@ -4,7 +4,7 @@ from app.models.base import Base
 from sqlalchemy import Column, Integer, Boolean, ForeignKey, String
 
 
-class Gift(Base):
+class Wish(Base):
     id = Column(Integer, primary_key=True)
     user = relationship('User')
     uid = Column(Integer, ForeignKey('user.id'))

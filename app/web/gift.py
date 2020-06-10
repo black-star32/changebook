@@ -1,9 +1,12 @@
 # from app.libs.enums import PendingStatus
 # from app.models.drift import Drift
 from flask import render_template, flash, request, redirect, url_for, current_app
-# from flask_login import login_required, current_user
+from flask_login import login_required, current_user
 from sqlalchemy import desc, func
 
+from app import db
+from app.models.gift import Gift
+from app.spider.change_book import ChangeBook
 from . import web
 # from app.spider.yushu_book import YuShuBook
 # from app.view_models.gift import MyGifts
@@ -16,9 +19,9 @@ __author__ = '七月'
 
 
 @web.route('/my/gifts')
-# @login_required
+@login_required
 def my_gifts():
-    pass
+    return 'My gifts'
     # uid = current_user.id
     # gifts = Gift.query.filter_by(uid=uid, launched=False).order_by(
     #     desc(Gift.create_time)).all()
@@ -28,9 +31,18 @@ def my_gifts():
 
 
 @web.route('/gifts/book/<isbn>')
-# @login_required
+@login_required
 def save_to_gifts(isbn):
-    pass
+    if current_user.can_save_to_list(isbn):
+        with db.auto_commit():
+            gift = Gift()
+            gift.isbn = isbn
+            gift.uid = current_user.id
+            current_user.beans += current_app.config['BEANS_UPLOAD_ONE_BOOK']
+            db.session.add(gift)
+    else:
+        flash('这本书已添加至你的赠送清单或已存在于你的心愿清单，请不要重复添加')
+    return redirect(url_for('web.book_detail', isbn=isbn))
     # yushu_book = YuShuBook()
     # yushu_book.search_by_isbn(isbn)
     # # gifting = Gift.query.filter_by(uid=current_user.id, isbn=isbn, status=1,

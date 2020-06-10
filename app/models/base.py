@@ -1,12 +1,31 @@
-from flask_sqlalchemy import SQLAlchemy
+from contextlib import contextmanager
+from datetime import datetime
+
+from flask_sqlalchemy import SQLAlchemy as _SQLAlchemy
 from sqlalchemy import SmallInteger, Column, Integer
 
+
+class SQLAlchemy(_SQLAlchemy):
+    @contextmanager
+    def auto_commit(self):
+        try:
+            yield
+            self.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+
 db = SQLAlchemy()
+
 
 class Base(db.Model):
     __abstract__ = True
     create_time = Column('crate_time', Integer)
     status = Column(SmallInteger, default=1)
+
+    def __init__(self):
+        self.create_time = int(datetime.now().timestamp())
 
     def set_attr(self, attrs_dict):
         for key, value in attrs_dict.items():
