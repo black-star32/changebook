@@ -1,6 +1,6 @@
 from flask import render_template, redirect, current_app, g
 from flask import request, flash, url_for
-from flask_login import login_user
+from flask_login import login_user, logout_user
 from flask_sqlalchemy import get_debug_queries
 
 from app.forms.auth import RegisterForm, LoginForm
@@ -105,9 +105,8 @@ def change_password():
 @web.route('/logout')
 # @login_required
 def logout():
-    pass
-    # logout_user()
-    # return redirect(url_for('web.index'))
+    logout_user()
+    return redirect(url_for('web.index'))
 
 
 @web.route('/register/confirm/<token>')

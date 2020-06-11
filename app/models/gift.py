@@ -3,8 +3,6 @@ from sqlalchemy.orm import relationship
 
 from app.models.base import Base, db
 from sqlalchemy import Column, Integer, Boolean, ForeignKey, String, desc, func
-
-from app.models.wish import Wish
 from app.spider.change_book import ChangeBook
 
 
@@ -33,6 +31,7 @@ class Gift(Base):
         # 条件表达式
         # mysql in
         # isbn对应的数量
+        from app.models.wish import Wish
         count_list = db.session.query(func.count(Wish.id), Wish.isbn).filter(Wish.launched == False,
                                       Wish.isbn.in_(isbn_list),
                                       Wish.status == 1).group_by(
