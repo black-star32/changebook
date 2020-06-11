@@ -27,7 +27,7 @@ def my_gifts():
     isbn_list = [gift.isbn for gift in gifts_of_mine]
     wish_count_list = Gift.get_wish_counts(isbn_list)
     view_model = MyGifts(gifts_of_mine, wish_count_list)
-    return render_template('my_gifts.html', gifts=view_model)
+    return render_template('my_gifts.html', gifts=view_model.gifts)
     # uid = current_user.id
     # gifts = Gift.query.filter_by(uid=uid, launched=False).order_by(
     #     desc(Gift.create_time)).all()
