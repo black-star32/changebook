@@ -3,7 +3,7 @@ from flask import request, flash, url_for
 from flask_login import login_user, logout_user
 from flask_sqlalchemy import get_debug_queries
 
-from app.forms.auth import RegisterForm, LoginForm
+from app.forms.auth import RegisterForm, LoginForm, EmailForm
 from app.models.user import User
 from . import web
 # from app.forms.auth import RegisterForm, LoginForm, ResetPasswordForm, EmailForm, \
@@ -59,6 +59,15 @@ def login():
 
 @web.route('/reset/password', methods=['GET', 'POST'])
 def forget_password_request():
+    form = EmailForm(request.form)
+    if request.method == "POST":
+        if form.validate():
+            account_email = form.email.data
+            user = User.query.filter_by(email=account_email).first_or_404()
+            from app.libs.email import send_mail
+            send_mail()
+
+    return render_template('auth/forget_password_request.html', form=form)
     pass
     # if request.method == 'POST':
     #     form = EmailForm(request.form)
