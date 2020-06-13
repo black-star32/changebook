@@ -75,7 +75,7 @@ class User(UserMixin, Base):
         with db.auto_commit():
             user = User.query.get(uid)
             user.password = new_password
-        return
+        return True
 
 @login_manager.user_loader
 def get_user(uid):
