@@ -1,17 +1,19 @@
 # from app.forms.book import DriftForm
 # from app.service.drift import DriftService
-# from app.libs.enums import PendingStatus
-# from app.models.base import db
+from app.forms.book import DriftForm
+from app.libs.email import send_mail
+from app.models.base import db
 # from app.models.drift import Drift
-# from app.models.wish import Wish
 # from app.view_models.drift import DriftViewModel
-from flask import render_template, flash, request, redirect, url_for, current_app
-# from flask_login import login_required, current_user
-# from sqlalchemy import or_, desc
+from flask import render_template, flash, request, redirect, url_for
+from flask_login import login_required, current_user
+from sqlalchemy import or_, desc
 # from app import cache
-
+from app.view_models.book import BookViewModel
+from app.models.drift import Drift
+from app.view_models.drift import DriftViewModel, DriftCollection
 from . import web
-# from app.models.gift import Gift
+from app.models.gift import Gift
 
 __author__ = '七月'
 
@@ -19,7 +21,25 @@ __author__ = '七月'
 @web.route('/drift/<int:gid>', methods=['GET', 'POST'])
 # @login_required
 def send_drift(gid):
-    pass
+    current_gift = Gift.query.get_or_404(gid)
+    if current_gift.is_yourself_gift(current_user.id):
+        flash('这本书是你自己的^_^, 不能向自己索要书籍噢')
+        return redirect(url_for('web.book_detail', isbn=current_gift.isbn))
+    can = current_user.can_send_drift()
+    if not can:
+        return render_template('not_enough_beans.html', beans=current_user.beans)
+    drift_form = DriftForm(request.form)
+    if request.method == 'POST' and drift_form.validate():
+        save_dirft(drift_form, current_gift)
+        send_mail(current_gift.user.email, '有人想要一本书', 'email/get_gift.html',
+                                      wisher=current_user,
+                                      gift=current_gift)
+        return redirect(url_for('web.pending'))
+
+    gifter = current_gift.user.summary
+
+    return render_template('drift.html', gifter=gifter,
+                           user_beans=current_user.beans, form=drift_form)
     # # filter_by(id=gid, launched=True)没有下面这条语句好。下面的语句可以多判断一种状态
     # current_gift = Gift.query.get_or_404(gid)
     # # if current_gift.launched:
@@ -63,15 +83,14 @@ def send_drift(gid):
 
 
 @web.route('/pending')
-# @login_required
+@login_required
 def pending():
-    pass
-    # drifts = Drift.query.filter(
-    #     or_(Drift.requester_id == current_user.id,
-    #         Drift.gifter_id == current_user.id)).order_by(
-    #     desc(Drift.create_time)).all()
-    # view_model = DriftViewModel.pending(drifts)
-    # return render_template('pending.html', drifts=view_model)
+    drifts = Drift.query.filter(
+        or_(Drift.requester_id == current_user.id,
+            Drift.gifter_id == current_user.id)).order_by(
+        desc(Drift.create_time)).all()
+    views = DriftCollection(drifts, current_user.id)
+    return render_template('pending.html', drifts=views.data)
 
 
 @web.route('/drift/<int:did>/reject')
@@ -132,3 +151,24 @@ def mailed_drift(did):
     #     Wish.query.filter_by(isbn=drift.isbn, uid=drift.requester_id,
     #                          launched=False).update({Wish.launched: True})
     # return redirect(url_for('web.pending'))
+
+def save_dirft(drift_form, current_gift):
+    with db.auto_commit():
+        drift = Drift()
+        drift_form.populate_obj(drift)
+
+        drift.gift_id = current_gift.id
+        drift.requester_id = current_user.id
+        drift.requester_nickname = current_user.nickname
+        drift.gifter_nickname = current_gift.user.nickname
+        drift.gifter_id = current_gift.user.id
+
+        book = BookViewModel(current_gift.book)
+        drift.book_title = book.title
+        drift.book_author = book.author
+        drift.book_img = book.image
+        drift.isbn = book.isbn
+
+        current_user.beans -= 1
+        db.session.add(drift)
+

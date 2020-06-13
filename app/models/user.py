@@ -1,8 +1,11 @@
+from math import floor
+
 from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
+from app.libs.enums import PendingStatus
 from app.libs.helper import is_isbn_or_key
 from app.models.base import Base, db
 
@@ -11,6 +14,7 @@ from app import login_manager
 from app.models.gift import Gift
 from app.models.wish import Wish
 from app.spider.change_book import ChangeBook
+from app.models.drift import Drift
 
 
 class User(UserMixin, Base):
@@ -36,6 +40,16 @@ class User(UserMixin, Base):
     @password.setter
     def password(self, raw):
         self._password = generate_password_hash(raw)
+
+    def can_send_drift(self):
+        if self.beans < 1:
+            return False
+        success_gifts = Drift.query.filter(Drift.pending == PendingStatus.Success.value,
+                                           Gift.uid == self.id).count()
+        success_receive = Drift.query.filter(Drift.pending == PendingStatus.Success.value,
+                                             Drift.requester_id == self.id).count()
+        return True if floor(success_receive / 2) <= floor(success_gifts) else False
+
 
 
     def check_password(self, raw):
@@ -76,6 +90,16 @@ class User(UserMixin, Base):
             user = User.query.get(uid)
             user.password = new_password
         return True
+
+    @property
+    def summary(self):
+        return dict(
+            nickname=self.nickname,
+            beans=self.beans,
+            email=self.email,
+            send_receive=str(self.send_counter) + '/' + str(self.receive_counter)
+        )
+
 
 @login_manager.user_loader
 def get_user(uid):
