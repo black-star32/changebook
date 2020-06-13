@@ -60,8 +60,8 @@ class User(UserMixin, Base):
         else:
             return False
 
-    def generate_token(self, expiartion=600):
-        s = Serializer(current_app.config['SECRET_KEY'], expiartion)
+    def generate_token(self, expiration=3600):
+        s = Serializer(current_app.config['SECRET_KEY'], expiration)
         return s.dumps({'id': self.id}).decode('utf-8')
 
     @staticmethod
