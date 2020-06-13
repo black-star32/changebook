@@ -3,7 +3,7 @@ from flask import request, flash, url_for
 from flask_login import login_user, logout_user
 from flask_sqlalchemy import get_debug_queries
 
-from app.forms.auth import RegisterForm, LoginForm, EmailForm
+from app.forms.auth import RegisterForm, LoginForm, EmailForm, ResetPasswordForm
 from app.models.user import User
 from . import web
 # from app.forms.auth import RegisterForm, LoginForm, ResetPasswordForm, EmailForm, \
@@ -65,7 +65,8 @@ def forget_password_request():
             account_email = form.email.data
             user = User.query.filter_by(email=account_email).first_or_404()
             from app.libs.email import send_mail
-            send_mail()
+            send_mail(form.email.data, '重置你的密码',
+                      'email/reset_password.html', user=user, token=user.generate_token())
 
     return render_template('auth/forget_password_request.html', form=form)
     pass
@@ -84,7 +85,10 @@ def forget_password_request():
 
 @web.route('/reset/password/<token>', methods=['GET', 'POST'])
 def forget_password(token):
-    pass
+    form = ResetPasswordForm(request.form)
+    if request.method == 'POST' and form.validate():
+        pass
+
     # if not current_user.is_anonymous:
     #     return redirect(url_for('web.index'))
     # form = ResetPasswordForm(request.form)
@@ -95,7 +99,7 @@ def forget_password(token):
     #         return redirect(url_for('web.login'))
     #     else:
     #         return redirect(url_for('web.index'))
-    # return render_template('auth/forget_password.html')
+    return render_template('auth/forget_password.html')
 
 
 @web.route('/change/password', methods=['GET', 'POST'])
