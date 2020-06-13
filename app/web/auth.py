@@ -9,7 +9,7 @@ from . import web
 # from app.forms.auth import RegisterForm, LoginForm, ResetPasswordForm, EmailForm, \
 #     ChangePasswordForm
 from app.models.base import db
-# from app.libs.email import send_email
+from app.libs.email import send_mail
 
 __author__ = '七月'
 
@@ -64,12 +64,11 @@ def forget_password_request():
         if form.validate():
             account_email = form.email.data
             user = User.query.filter_by(email=account_email).first_or_404()
-            from app.libs.email import send_mail
             send_mail(form.email.data, '重置你的密码',
                       'email/reset_password.html', user=user, token=user.generate_token())
-
+            flash('一封邮件已发送到邮箱' + account_email + '，请及时查收')
+            # return redirect(url_for('web.login'))
     return render_template('auth/forget_password_request.html', form=form)
-    pass
     # if request.method == 'POST':
     #     form = EmailForm(request.form)
     #     if form.validate():
