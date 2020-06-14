@@ -6,6 +6,8 @@ from flask import render_template, flash, redirect, url_for, request
 from flask_login import current_user, login_required
 
 from app import db
+from app.libs.email import send_mail
+from app.models.gift import Gift
 from app.models.wish import Wish
 from app.view_models.trade import MyTrades
 from app.view_models.wish import MyWishes
@@ -16,8 +18,6 @@ from . import web
 
 # from app.models import db
 # from app.models.wish import Wish
-
-__author__ = '七月'
 
 
 def limit_key_prefix():
@@ -57,10 +57,20 @@ def save_to_wish(isbn):
 
 
 @web.route('/satisfy/wish/<int:wid>')
-# @login_required
+@login_required
 # @limiter.limit(key_func=limit_key_prefix)
 def satisfy_wish(wid):
-    pass
+    wish = Wish.query.filter(Wish.id==wid).first()
+    if not wish:
+        flash('该心愿已经被撤销或者满足')
+    gift = Gift.query.filter(Gift.uid==current_user.id, Gift.isbn==wish.isbn).first()
+    if not gift:
+        flash('你还没有上传此书，请点击“加入到赠送清单”添加此书。添加前，请确保自己可以赠送此书')
+    else:
+        send_mail(wish.user.email, '有人想送你一本书', 'email/satisify_wish.html', wish=wish, gift=gift)
+        flash('已向他/她发送了一封邮件，如果他/她愿意接受你的赠送，你将收到一个鱼漂')
+    return redirect(url_for('web.book_detail', isbn=wish.isbn))
+
     # """
     #     向想要这本书的人发送一封邮件
     #     注意，这个接口需要做一定的频率限制
