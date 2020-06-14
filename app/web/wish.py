@@ -3,7 +3,7 @@
 # from app.view_models.wish import MyWishes
 from flask import render_template, flash, redirect, url_for, request
 # from flask_login import login_required, current_user
-from flask_login import current_user
+from flask_login import current_user, login_required
 
 from app import db
 from app.models.wish import Wish
@@ -27,7 +27,7 @@ def limit_key_prefix():
     # return f"satisfy_wish/{isbn}/{uid}"
 
 @web.route('/my/wish')
-# @login_required
+@login_required
 def my_wish():
     uid = current_user.id
     wishes_of_mine = Wish.get_user_wishes(uid)
@@ -43,7 +43,7 @@ def my_wish():
 
 
 @web.route('/wish/book/<isbn>')
-# @login_required
+@login_required
 def save_to_wish(isbn):
     if current_user.can_save_to_list(isbn):
         with db.auto_commit():
@@ -78,9 +78,15 @@ def satisfy_wish(wid):
 
 
 @web.route('/wish/book/<isbn>/redraw')
-# @login_required
+@login_required
 def redraw_from_wish(isbn):
-    pass
+    wish = Wish.query.filter(Wish.isbn==isbn, Wish.uid==current_user.id, Wish.launched==False).first()
+    if not wish:
+        flash('该心愿不存在，删除失败')
+    else:
+        with db.auto_commit():
+            wish.delete()
+    return redirect(url_for('web.my_wish'))
     # wish = Wish.query.filter_by(isbn=isbn).first()
     # if not wish:
     #     flash('该心愿不存在，删除失败')
