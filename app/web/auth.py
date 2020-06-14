@@ -1,6 +1,6 @@
 from flask import render_template, redirect, current_app, g
 from flask import request, flash, url_for
-from flask_login import login_user, logout_user
+from flask_login import login_user, logout_user, login_required
 from flask_sqlalchemy import get_debug_queries
 
 from app.forms.auth import RegisterForm, LoginForm, EmailForm, ResetPasswordForm
@@ -105,7 +105,7 @@ def forget_password(token):
 
 
 @web.route('/change/password', methods=['GET', 'POST'])
-# @login_required
+@login_required
 def change_password():
     pass
     # form = ChangePasswordForm(request.form)
@@ -118,7 +118,7 @@ def change_password():
 
 
 @web.route('/logout')
-# @login_required
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('web.index'))
