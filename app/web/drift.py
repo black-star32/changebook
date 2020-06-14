@@ -10,6 +10,8 @@ from flask import render_template, flash, request, redirect, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import or_, desc
 # from app import cache
+from app.models.user import User
+from app.models.wish import Wish
 from app.view_models.book import BookViewModel
 from app.models.drift import Drift
 from app.view_models.drift import DriftViewModel, DriftCollection
@@ -95,9 +97,15 @@ def pending():
 
 
 @web.route('/drift/<int:did>/reject')
-# @login_required
+@login_required
 def reject_drift(did):
-    pass
+    with db.auto_commit():
+        drift = Drift.query.filter(Gift.uid==current_user.id,
+                                   Drift.id==did).first_or_404()
+        drift.pending = PendingStatus.Reject
+        requester = User.query.get_or_404(drift.requester_id)
+        requester.beans += 1
+    return redirect(url_for('web.pending'))
     # """
     #     拒绝请求，只有书籍赠送者才能拒绝请求
     #     注意需要验证超权
@@ -138,9 +146,21 @@ def redraw_drift(did):
 
 
 @web.route('/drift/<int:did>/mailed')
-# @login_required
+@login_required
 def mailed_drift(did):
-    pass
+    with db.auto_commit():
+        drift = Drift.query.filter(
+            Gift.id==did, Drift.gifter_id==current_user.id
+        ).first_or_404()
+        drift.pending = PendingStatus.Success
+        current_user.beans += 1
+        gift = Gift.query.filter(Gift.id==drift.gift_id).first_or_404()
+        gift.launched = True
+        Wish.query.filter(Wish.isbn==drift.isbn, Wish.uid==drift.requester_id, Wish.launched==False
+                          ).update({Wish.launched:True})
+        return redirect(url_for('web.pending'))
+
+
     # """
     #     确认邮寄，只有书籍赠送者才可以确认邮寄
     #     注意需要验证超权
