@@ -19,7 +19,6 @@ from . import web
 # from app.models import db
 # from app.models.gift import Gift
 
-__author__ = '七月'
 
 
 @web.route('/my/gifts')

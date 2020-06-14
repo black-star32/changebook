@@ -1,6 +1,4 @@
-"""
- Created by 七月 on 2017/12/16.
-"""
+
 from app.libs.enums import PendingStatus
 
 class DriftCollection:

@@ -11,9 +11,6 @@ from . import web
 from app.models.base import db
 from app.libs.email import send_mail
 
-__author__ = '七月'
-
-
 @web.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm(request.form)
