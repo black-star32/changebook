@@ -12,3 +12,11 @@ def is_isbn_or_key(word):
         isbn_or_key = 'isbn'
 
     return isbn_or_key
+
+def get_isbn(data_dict):
+    isbn = data_dict.get('isbn')
+    if not isbn:
+        isbn = data_dict.get('isbn13')
+        if not isbn:
+            isbn = data_dict.get('isbn10')
+    return isbn

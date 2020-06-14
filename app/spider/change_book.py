@@ -1,6 +1,8 @@
 from app.libs.httper import HttpReuquest
 from flask import current_app
 
+from app.spider.persistence import MySQLHelper
+
 
 class ChangeBook:
     # 模型层 MVC层 M层
@@ -12,16 +14,23 @@ class ChangeBook:
         self.books = []
 
     def search_by_isbn(self, isbn):
-        url = self.isbn_url.format(isbn)
-        result = HttpReuquest.get(url)
-        self.__fill_single(result)
-        # dic
-        # return result
+        book_model = MySQLHelper.has_existed(isbn)
+        if book_model:
+            self.__fill_single(book_model)
+        else:
+            url = self.isbn_url.format(isbn)
+            result = HttpReuquest.get(url)
+            self.__fill_single(result)
+            book_model = MySQLHelper.persistence_book(result)
+            return book_model, 'from_mysql'
 
     def __fill_single(self, data):
-        if data:
+        if data and isinstance(data, dict):
             self.total = 1
             self.books.append(data)
+        else:
+            self.total = 1
+            self.books.append({'data':data.__dict__})
 
     def __fill_collection(self, data):
         self.total = data['total']

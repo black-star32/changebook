@@ -36,7 +36,7 @@ def search():
         if isbn_or_key == 'isbn':
             change_book.search_by_isbn(q)
         else:
-            ChangeBook.search_by_keyword(q, page)
+            change_book.search_by_keyword(q, page)
 
         # __dict__
         books.fill(change_book, q)

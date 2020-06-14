@@ -15,7 +15,7 @@ class Book(Base):
     pubdate = Column(String(20), doc='出版日期')
     isbn = Column(String(15), nullable=False, unique=True, doc='isbn编号')
     summary = Column(String(1000), doc='简介')
-    image = Column(String(50), doc='图片')
+    image = Column(String(100), doc='图片')
 
     # MVC M Model 只有数据 = 数据表  Model不只有数据，还有业务逻辑操作数据
     # ORM 对象关系映射 Code First
