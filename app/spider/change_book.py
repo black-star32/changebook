@@ -34,14 +34,20 @@ class ChangeBook:
             self.books.append({'data':data.__dict__})
 
     def __fill_collection(self, data):
-        self.total = data['total']
-        self.books = data['books']
+        self.total = len(data)
+        self.books = [{'data':book.__dict__} for book in data]
 
     def search_by_keyword(self, keyword, page=1):
-        url = self.key_word_url.format(keyword, current_app.config['PER_PAGE'], self.calculate_start(page))
-        result = HttpReuquest.get(url)
-        self.__fill_collection(result)
-        # return result
+        book_models = MySQLHelper.has_existed_keyword(keyword)
+        if book_models:
+            self.__fill_collection(book_models)
+        else:
+            url = self.key_word_url.format(keyword, current_app.config['PER_PAGE'], self.calculate_start(page))
+            result = HttpReuquest.get(url)
+            if result.get('status'):
+                self.__fill_collection(result)
+                book_model = MySQLHelper.persistence_book(result)
+                return book_model, 'from_mysql'
 
     def calculate_start(self, page):
         return (page-1)*current_app.config['PER_PAGE']

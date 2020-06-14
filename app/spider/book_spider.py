@@ -22,6 +22,6 @@ class BookSpider:
 
 if __name__ == '__main__':
     with app.app_context():
-        for i in range(9787000000194, 9787999999999):
+        for i in range(9787000002994, 9787999999999):
             BookSpider().search_and_save_books(i)
             time.sleep(0.1)

@@ -13,6 +13,14 @@ class MySQLHelper:
             return None
 
     @classmethod
+    def has_existed_keyword(cls, keyword):
+        books = Book.query.filter(Book.title.like('%{}%'.format(keyword))).all()
+        if books:
+            return books
+        else:
+            return None
+
+    @classmethod
     def persistence_book(cls, book):
         book_model = Book()
         book_model.set_attr(book['data'])
