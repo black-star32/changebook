@@ -20,9 +20,10 @@ class ChangeBook:
         else:
             url = self.isbn_url.format(isbn)
             result = HttpReuquest.get(url)
-            self.__fill_single(result)
-            book_model = MySQLHelper.persistence_book(result)
-            return book_model, 'from_mysql'
+            if result.get('status'):
+                self.__fill_single(result)
+                book_model = MySQLHelper.persistence_book(result)
+                return book_model, 'from_mysql'
 
     def __fill_single(self, data):
         if data and isinstance(data, dict):
