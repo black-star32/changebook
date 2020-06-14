@@ -150,7 +150,7 @@ def redraw_drift(did):
 def mailed_drift(did):
     with db.auto_commit():
         drift = Drift.query.filter(
-            Gift.id==did, Drift.gifter_id==current_user.id
+            Drift.id==did, Drift.gifter_id==current_user.id
         ).first_or_404()
         drift.pending = PendingStatus.Success
         current_user.beans += 1
