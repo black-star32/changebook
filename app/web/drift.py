@@ -2,6 +2,7 @@
 # from app.service.drift import DriftService
 from app.forms.book import DriftForm
 from app.libs.email import send_mail
+from app.libs.enums import PendingStatus
 from app.models.base import db
 # from app.models.drift import Drift
 # from app.view_models.drift import DriftViewModel
@@ -112,9 +113,14 @@ def reject_drift(did):
 
 
 @web.route('/drift/<int:did>/redraw')
-# @login_required
+@login_required
 def redraw_drift(did):
-    pass
+    with db.auto_commit():
+        drift = Drift.query.filter(Drift.id == did).first_or_404()
+        drift.pending = PendingStatus.Redraw
+        current_user.beans += 1
+    return redirect(url_for('web.pending'))
+
     # """
     #     撤销请求，只有书籍请求者才可以撤销请求
     #     注意需要验证超权

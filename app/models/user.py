@@ -44,9 +44,9 @@ class User(UserMixin, Base):
     def can_send_drift(self):
         if self.beans < 1:
             return False
-        success_gifts = Drift.query.filter(Drift.pending == PendingStatus.Success.value,
+        success_gifts = Drift.query.filter(Drift.pending == PendingStatus.Success,
                                            Gift.uid == self.id).count()
-        success_receive = Drift.query.filter(Drift.pending == PendingStatus.Success.value,
+        success_receive = Drift.query.filter(Drift.pending == PendingStatus.Success,
                                              Drift.requester_id == self.id).count()
         return True if floor(success_receive / 2) <= floor(success_gifts) else False
 
